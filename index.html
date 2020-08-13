@@ -9,32 +9,46 @@
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
     <title>Document</title>
     <style>
-
+        header {position: fixed;top: 10px;}
+        .paint {float: left;margin-left: 10px;}
     </style>
 </head>
 
 <body>
+    <header>
+        <button id="painting" class="paint">绘画</button>
+        <button id="rubber" class="paint">橡皮</button>
+        <button id="reset" class="paint">重来</button>
+    </header>
     <canvas id="canvas"></canvas>
-
     <script>
-        let isTouchDevre = 'ontouchstart' in document.documentElement;
         let canvas = document.getElementById('canvas');
-        let ctx = canvas.getContext('2d');
-
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        let ctx = canvas.getContext('2d');
+
+        let paint = true;
+        painting.onclick = () => {
+            paint = true;
+        }
+        rubber.onclick = () => {
+            paint = false;
+        }
+        reset.onclick = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
 
         let last;
         let isHold = false;
-
-        function canvasStyle (){
+        function canvasStyle() {
             ctx.strokeStyle = 'blue'
             ctx.lineWidth = 6;
             ctx.lineCap = 'round';
             ctx.beginPath();
         }
 
-        if (isTouchDevre === true) {
+        let isTouchDevre = 'ontouchstart' in document.documentElement;
+        if (isTouchDevre === true) {    // 是否触屏设备
             canvas.ontouchstart = (e) => {
                 last = [e.touches[0].clientX, e.touches[0].clientY];
             }
@@ -43,16 +57,19 @@
                 let x = e.touches[0].clientX;
                 let y = e.touches[0].clientY;
                 canvasStyle();
-                ctx.moveTo(last[0], last[1]);
-                ctx.lineTo(x, y);
-                ctx.stroke();
-                last = [x, y];
+                if (paint === true) {   // 默认。或点击“绘画”按钮
+                    ctx.moveTo(last[0], last[1]);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                    last = [x, y];
+                } else {
+                    ctx.fillStyle = ctx.clearRect(x - 24, y - 24, 48, 48);  // 点击‘橡皮’按钮激活
+                }
             }
         } else {
             canvas.onmousedown = (e) => {
-                console.log(e);
-                isHold = true;
-                last = [e.clientX, e.clientY];
+                isHold = true;      // 是否长按鼠标
+                last = [e.clientX, e.clientY];  // 记录第一次点击的坐标
             }
             canvas.onmouseup = () => {
                 isHold = false
@@ -60,10 +77,14 @@
             canvas.onmousemove = (e) => {
                 if (isHold === true) {
                     canvasStyle();
-                    ctx.moveTo(last[0], last[1]);
-                    ctx.lineTo(e.clientX, e.clientY);
-                    ctx.stroke();
-                    last = [e.clientX, e.clientY];
+                    if (paint === true) {
+                        ctx.moveTo(last[0], last[1]);
+                        ctx.lineTo(e.clientX, e.clientY);
+                        ctx.stroke();
+                        last = [e.clientX, e.clientY];
+                    } else {
+                        ctx.clearRect(e.clientX - 24, e.clientY - 24, 48, 48); // 点击‘橡皮’按钮激活
+                    }
                 }
             }
         }
