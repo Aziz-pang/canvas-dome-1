@@ -1,61 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 初始化css样式，文档链接：https://yuilibrary.com/yui/docs/cssreset/ -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- //初始化css样式，文档链接：https://yuilibrary.com/yui/docs/cssreset/ -->
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
-    <link rel="stylesheet" type="text/css" href="./src/css/style.css">
     <title>Document</title>
+    <style>
+
+    </style>
 </head>
+
 <body>
     <canvas id="canvas"></canvas>
 
     <script>
-        let isTouchDevre  = 'ontouchstart' in document.documentElement;
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-
+        let isTouchDevre = 'ontouchstart' in document.documentElement;
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        
-        let last
+
+        let last;
         let isHold = false;
-        canvas.onmousedown = (e) =>{
-            isHold = true
-            last = [e.clientX , e.clientY];
-        }
-        canvas.onmouseup = () =>{
-            isHold = false
-        }       
-        canvas.onmousemove = (e) => {
-            if(isHold === true){
+
+        function canvasStyle (){
             ctx.strokeStyle = 'blue'
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 6;
             ctx.lineCap = 'round';
             ctx.beginPath();
-            ctx.moveTo(last[0],last[1]);
-            ctx.lineTo(e.clientX,e.clientY);
-            ctx.stroke();
-            last =[e.clientX , e.clientY];
+        }
+
+        if (isTouchDevre === true) {
+            canvas.ontouchstart = (e) => {
+                last = [e.touches[0].clientX, e.touches[0].clientY];
+            }
+            canvas.ontouchmove = (e) => {
+                event.preventDefault();
+                let x = e.touches[0].clientX;
+                let y = e.touches[0].clientY;
+                canvasStyle();
+                ctx.moveTo(last[0], last[1]);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                last = [x, y];
+            }
+        } else {
+            canvas.onmousedown = (e) => {
+                console.log(e);
+                isHold = true;
+                last = [e.clientX, e.clientY];
+            }
+            canvas.onmouseup = () => {
+                isHold = false
+            }
+            canvas.onmousemove = (e) => {
+                if (isHold === true) {
+                    canvasStyle();
+                    ctx.moveTo(last[0], last[1]);
+                    ctx.lineTo(e.clientX, e.clientY);
+                    ctx.stroke();
+                    last = [e.clientX, e.clientY];
+                }
             }
         }
-
-        canvas.ontouchmove = (e) =>{
-            let x = e.touches[0].clientX;
-            let y = e.touches[0].clientY;
-            last =[x , y];
-            ctx.beginPath();
-            ctx.moveTo(last[0], last[1]);
-            ctx.lineTo(x,y);
-            ctx.stroke();
-            last =[x , y];
-            
-        }
-
-
-        
-    </script>    
+    </script>
 </body>
+
 </html>
