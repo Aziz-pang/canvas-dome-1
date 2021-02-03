@@ -6,16 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <!-- //初始化css样式，文档链接：https://yuilibrary.com/yui/docs/cssreset/ -->
     <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
-    <title>Document</title>
+    <title>canvas自由作画</title>
     <style>
         header {
-            position: fixed;
+            position: absolute;
             top: 10px;
         }
         
         .paint {
             float: left;
             margin-left: 10px;
+        }
+        
+        #canvas {
+            margin-top: 50px;
+            border: 1px solid red;
+        }
+        
+        #img {
+            width: 60%;
+        }
+        
+        .output {
+            text-align: center;
+            margin-top: 100px;
         }
     </style>
 </head>
@@ -25,12 +39,17 @@
         <button id="painting" class="paint">绘画</button>
         <button id="rubber" class="paint">橡皮</button>
         <button id="reset" class="paint">重来</button>
+        <button id="post" class="paint">提交</button>
     </header>
     <canvas id="canvas"></canvas>
+    <div class="output">
+        <img id="img" src="" alt="">
+    </div>
     <script>
         let canvas = document.getElementById('canvas');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth - 2;
+        canvas.height = 400;
+
         let ctx = canvas.getContext('2d');
 
         let paint = true;
@@ -41,28 +60,43 @@
             paint = false;
         }
         reset.onclick = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, canvas.width, canvas.height); //清空canvas
+            canvasBackground()
+            paint = true;
+        }
+        post.onclick = () => {
+            // 把画布的内容转换为base64编码格式的图片
+            var data = canvas.toDataURL('image/jpeg', 0.5); //1表示质量(无损压缩)
+            console.log(data);
+            img.src = data
         }
 
         let last;
         let isHold = false;
 
+        function canvasBackground() {
+            ctx.fillStyle = 'white'
+            ctx.fillRect(0, 0, canvas.width, canvas.height)
+        }
+        canvasBackground()
+
         function canvasStyle() {
-            ctx.strokeStyle = 'blue'
-            ctx.lineWidth = 6;
-            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#333'
+            ctx.lineWidth = 4
+            ctx.lineCap = 'round'
             ctx.beginPath();
+
         }
 
         let isTouchDevre = 'ontouchstart' in document.documentElement;
         if (isTouchDevre === true) { // 是否触屏设备
             canvas.ontouchstart = (e) => {
-                last = [e.touches[0].clientX, e.touches[0].clientY];
+                last = [e.touches[0].clientX, e.touches[0].clientY - 50];
             }
             canvas.ontouchmove = (e) => {
                 event.preventDefault();
                 let x = e.touches[0].clientX;
-                let y = e.touches[0].clientY;
+                let y = e.touches[0].clientY - 50;
                 canvasStyle();
                 if (paint === true) { // 默认。或点击“绘画”按钮
                     ctx.moveTo(last[0], last[1]);
@@ -76,7 +110,7 @@
         } else {
             canvas.onmousedown = (e) => {
                 isHold = true; // 是否长按鼠标
-                last = [e.clientX, e.clientY]; // 记录第一次点击的坐标
+                last = [e.clientX, e.clientY - 50]; // 记录第一次点击的坐标
             }
             canvas.onmouseup = () => {
                 isHold = false
@@ -86,9 +120,9 @@
                     canvasStyle();
                     if (paint === true) {
                         ctx.moveTo(last[0], last[1]);
-                        ctx.lineTo(e.clientX, e.clientY);
+                        ctx.lineTo(e.clientX, e.clientY - 50);
                         ctx.stroke();
-                        last = [e.clientX, e.clientY];
+                        last = [e.clientX, e.clientY - 50];
                     } else {
                         ctx.clearRect(e.clientX - 24, e.clientY - 24, 48, 48); // 点击‘橡皮’按钮激活
                     }
